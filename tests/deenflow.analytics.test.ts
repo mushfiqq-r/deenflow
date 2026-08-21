@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { completionForDate, performanceInsight, periodSummary, rewardForAdhkar, rewardTotals } from "../lib/deenflow/analytics";
+import { completionForDate, groupedPerformance, performanceInsight, periodSummary, rewardForAdhkar, rewardTotals } from "../lib/deenflow/analytics";
 import { toDateKey } from "../lib/deenflow/date";
 import { createInitialData } from "../lib/deenflow/seed";
 import type { Adhkar, DeenFlowData } from "../lib/deenflow/types";
@@ -18,7 +18,7 @@ describe("DeenFlow analytics", () => {
 
   it("multiplies repetitions by the user-defined reward value and groups totals by reward unit", () => {
     const adhkar: Adhkar = { id: "dhikr-test", dhikr: "SubhanAllah", meaning: "Glory be to Allah", blessings: "Remembrance", target: 100, rewardValue: 3, rewardUnit: "Trees", createdAt: "2026-08-21T00:00:00.000Z" };
-    const data: DeenFlowData = { version: 1, categories: [], adhkar: [adhkar], entries: { "2026-08-21": { tasks: {}, adhkar: { "dhikr-test": 7 } } }, preferences: { display: "light", accent: "forest" } };
+    const data: DeenFlowData = { version: 1, categories: [], adhkar: [adhkar], entries: { "2026-08-21": { tasks: {}, adhkar: { "dhikr-test": 7 } } }, preferences: { display: "light", accent: "forest", focusTaskIds: [], reminders: { daily: { enabled: false, hour: 7, minute: 0 }, adhkar: { enabled: false, hour: 20, minute: 0 }, focus: { enabled: false, hour: 12, minute: 30 } } } };
     expect(rewardForAdhkar(adhkar, 7)).toBe(21);
     expect(rewardTotals(data)).toEqual([{ unit: "Trees", value: 21 }]);
   });
@@ -32,5 +32,14 @@ describe("DeenFlow analytics", () => {
     expect(summary.activeDays).toBe(1);
     expect(summary.points).toBe(task.points);
     expect(performanceInsight(data)).toContain("checklist");
+  });
+
+  it("creates stable four-week and six-month chart buckets from local history", () => {
+    const initial = createInitialData();
+    const weekly = groupedPerformance(initial, "week");
+    const monthly = groupedPerformance(initial, "month");
+    expect(weekly).toHaveLength(4);
+    expect(monthly).toHaveLength(6);
+    expect(weekly.every((item) => item.completion === 0 && item.points === 0)).toBe(true);
   });
 });

@@ -57,6 +57,42 @@ export const periodSummary = (data: DeenFlowData, days: number, endDate = toDate
   };
 };
 
+export type TrendBucket = {
+  label: string;
+  completion: number;
+  points: number;
+  rewards: number;
+  activeDays: number;
+};
+
+export const groupedPerformance = (data: DeenFlowData, mode: "week" | "month"): TrendBucket[] => {
+  if (mode === "week") {
+    const daily = periodSummary(data, 28).daily;
+    return Array.from({ length: 4 }, (_, index) => summarizeBucket(daily.slice(index * 7, (index + 1) * 7), `W${index + 1}`));
+  }
+  const now = new Date();
+  return Array.from({ length: 6 }, (_, index) => {
+    const date = new Date(now.getFullYear(), now.getMonth() - (5 - index), 1);
+    const following = new Date(date.getFullYear(), date.getMonth() + 1, 1);
+    const start = toDateKey(date);
+    const end = shiftDate(toDateKey(following), -1);
+    const span = Math.floor((fromDateKey(end).getTime() - fromDateKey(start).getTime()) / 86400000) + 1;
+    const label = new Intl.DateTimeFormat(undefined, { month: "short" }).format(date);
+    return summarizeBucket(periodSummary(data, span, end).daily, label);
+  });
+};
+
+function summarizeBucket(items: Array<{ completion: number; points: number; rewards: number }>, label: string): TrendBucket {
+  const activeDays = items.filter((item) => item.points > 0 || item.rewards > 0).length;
+  return {
+    label,
+    completion: items.length ? Math.round(items.reduce((sum, item) => sum + item.completion, 0) / items.length) : 0,
+    points: items.reduce((sum, item) => sum + item.points, 0),
+    rewards: items.reduce((sum, item) => sum + item.rewards, 0),
+    activeDays,
+  };
+}
+
 export const performanceInsight = (data: DeenFlowData) => {
   const recent = periodSummary(data, 7);
   const priorEnd = shiftDate(toDateKey(), -7);

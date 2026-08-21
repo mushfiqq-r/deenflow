@@ -71,5 +71,14 @@ export const createInitialData = (): DeenFlowData => ({
   categories: initialCategories,
   adhkar: [],
   entries: {},
-  preferences: { display: "light", accent: "forest" },
+  preferences: {
+    display: "light",
+    accent: "forest",
+    focusTaskIds: initialCategories.flatMap((category) => category.tasks).slice(0, 3).map((task) => task.id),
+    reminders: {
+      daily: { enabled: false, hour: 7, minute: 0 },
+      adhkar: { enabled: false, hour: 20, minute: 0 },
+      focus: { enabled: false, hour: 12, minute: 30 },
+    },
+  },
 });

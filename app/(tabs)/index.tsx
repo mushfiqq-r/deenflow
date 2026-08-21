@@ -24,6 +24,7 @@ export default function ChecklistScreen() {
   const dailyMax = taskMaximum(data.categories, false);
   const dailyPoints = taskPointsForDate(data, selectedDate);
   const list = useMemo<ListRow[]>(() => data.categories.flatMap((category) => category.tasks.map((task) => ({ type: "task", task, categoryId: category.id, categoryTitle: category.title }))), [data.categories]);
+  const focusRows = useMemo(() => list.filter((item) => data.preferences.focusTaskIds.includes(item.task.id)).slice(0, 5), [data.preferences.focusTaskIds, list]);
 
   const openTaskSheet = (categoryId: string, task?: ChecklistTask) => {
     setTaskName(task?.title ?? "");
@@ -64,6 +65,7 @@ export default function ChecklistScreen() {
               </View>
               <View style={screenStyles.metricRow}><Metric label="Points today" value={`${dailyPoints}`} note={`of ${dailyMax} daily`} icon="stars" /><Metric label="Categories" value={`${data.categories.length}`} note="customizable" icon="folder-open" /></View>
             </Card>
+            {focusRows.length ? <Card style={[screenStyles.focusCard, { borderColor: `${colors.accent}55`, backgroundColor: `${colors.accent}0E` }]}><View style={screenStyles.focusHeading}><View style={[screenStyles.focusIcon, { backgroundColor: `${colors.accent}1E` }]}><MaterialIcons name="flare" size={19} color={colors.accent} /></View><View><Text style={[screenStyles.focusTitle, { color: colors.text }]}>Today’s Focus</Text><Text style={[screenStyles.focusBody, { color: colors.muted }]}>Your selected intentions, kept close.</Text></View></View><View style={screenStyles.focusTasks}>{focusRows.map((item) => { const count = data.entries[selectedDate]?.tasks[item.task.id] ?? 0; return <Pressable key={item.task.id} accessibilityRole="checkbox" accessibilityState={{ checked: count > 0 }} onPress={() => setTaskCount(item.task.id, selectedDate, count > 0 ? 0 : 1)} style={({ pressed }) => [screenStyles.focusTask, { borderColor: count > 0 ? colors.accent : colors.border, backgroundColor: count > 0 ? `${colors.accent}15` : colors.background }, pressed && screenStyles.pressed]}><View style={[screenStyles.focusCheck, { backgroundColor: count > 0 ? colors.accent : "transparent", borderColor: count > 0 ? colors.accent : colors.muted }]}>{count > 0 ? <MaterialIcons name="check" size={13} color="#FFFFFF" /> : null}</View><View style={screenStyles.focusTaskCopy}><Text numberOfLines={1} style={[screenStyles.focusTaskTitle, { color: colors.text }]}>{item.task.title}</Text><Text style={[screenStyles.focusTaskMeta, { color: colors.muted }]}>{item.categoryTitle} · {item.task.points} pt{item.task.points === 1 ? "" : "s"}</Text></View></Pressable>; })}</View></Card> : null}
             <Text style={[screenStyles.sectionHint, { color: colors.muted }]}>Tap a circle to complete once. Use ± for repeatable or partial entries.</Text>
           </View>
         }
@@ -111,7 +113,7 @@ const screenStyles = StyleSheet.create({
   progressPercent: { fontSize: 19, fontWeight: "800" }, progressLabel: { fontSize: 10, fontWeight: "700" },
   progressCopy: { flex: 1, gap: 5 }, progressTitle: { fontSize: 17, fontWeight: "800" }, progressBody: { fontSize: 13, lineHeight: 18 },
   progressTrack: { height: 6, borderRadius: 3, overflow: "hidden", marginTop: 4 }, progressFill: { height: "100%", borderRadius: 3 },
-  metricRow: { flexDirection: "row", gap: 10 }, sectionHint: { fontSize: 12, lineHeight: 17, paddingHorizontal: 3 },
+  metricRow: { flexDirection: "row", gap: 10 }, focusCard: { gap: 12 }, focusHeading: { flexDirection: "row", alignItems: "center", gap: 10 }, focusIcon: { width: 36, height: 36, borderRadius: 12, alignItems: "center", justifyContent: "center" }, focusTitle: { fontSize: 15, fontWeight: "800" }, focusBody: { fontSize: 11, marginTop: 2 }, focusTasks: { gap: 7 }, focusTask: { flexDirection: "row", alignItems: "center", gap: 9, borderWidth: 1, borderRadius: 12, padding: 9 }, focusCheck: { width: 21, height: 21, borderRadius: 7, borderWidth: 1.5, alignItems: "center", justifyContent: "center" }, focusTaskCopy: { flex: 1, gap: 2 }, focusTaskTitle: { fontSize: 13, fontWeight: "800" }, focusTaskMeta: { fontSize: 10, fontWeight: "600" }, sectionHint: { fontSize: 12, lineHeight: 17, paddingHorizontal: 3 },
   rowWrap: { gap: 8 }, categoryHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 12, marginBottom: 2, paddingHorizontal: 2 },
   categoryTitle: { fontSize: 16, fontWeight: "800" }, textAction: { padding: 5 }, textActionLabel: { fontSize: 12, fontWeight: "800" },
   taskCard: { padding: 12, flexDirection: "row", alignItems: "center", gap: 10 }, checkButton: { width: 31, height: 31, borderRadius: 11, borderWidth: 1, alignItems: "center", justifyContent: "center" },

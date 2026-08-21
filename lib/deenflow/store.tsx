@@ -39,7 +39,24 @@ function normalize(candidate: unknown): DeenFlowData | null {
     preferences: {
       display: data.preferences?.display === "dark" || data.preferences?.display === "amoled" ? data.preferences.display : "light",
       accent: ["ocean", "indigo", "plum"].includes(data.preferences?.accent ?? "") ? data.preferences?.accent as AccentName : "forest",
+      focusTaskIds: Array.isArray(data.preferences?.focusTaskIds) ? data.preferences.focusTaskIds.filter((id): id is string => typeof id === "string") : [],
+      reminders: {
+        daily: normalizeReminder(data.preferences?.reminders?.daily, 7, 0),
+        adhkar: normalizeReminder(data.preferences?.reminders?.adhkar, 20, 0),
+        focus: normalizeReminder(data.preferences?.reminders?.focus, 12, 30),
+      },
     },
+  };
+}
+
+function normalizeReminder(candidate: unknown, hour: number, minute: number) {
+  const reminder = candidate as Partial<Preferences["reminders"]["daily"]> | undefined;
+  const candidateHour = reminder?.hour;
+  const candidateMinute = reminder?.minute;
+  return {
+    enabled: reminder?.enabled === true,
+    hour: Number.isInteger(candidateHour) && (candidateHour ?? -1) >= 0 && (candidateHour ?? 24) <= 23 ? candidateHour! : hour,
+    minute: Number.isInteger(candidateMinute) && (candidateMinute ?? -1) >= 0 && (candidateMinute ?? 60) <= 59 ? candidateMinute! : minute,
   };
 }
 

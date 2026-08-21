@@ -33,6 +33,18 @@ export type DayEntry = {
 export type Preferences = {
   display: DisplayMode;
   accent: AccentName;
+  focusTaskIds: string[];
+  reminders: {
+    daily: ReminderSetting;
+    adhkar: ReminderSetting;
+    focus: ReminderSetting;
+  };
+};
+
+export type ReminderSetting = {
+  enabled: boolean;
+  hour: number;
+  minute: number;
 };
 
 export type DeenFlowData = {

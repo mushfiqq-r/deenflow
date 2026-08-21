@@ -10,3 +10,8 @@
 - [x] Generate and configure a unique DeenFlow app icon and final branding assets.
 - [x] Add deterministic unit tests for reward calculations, history aggregation, and performance insights.
 - [x] Validate navigation and application behavior, then save the first complete project checkpoint.
+- [x] Add a local reminder schedule model for daily intentions, Adhkar targets, and individual task reminders.
+- [x] Build permission-aware reminder controls and a configurable Today’s Focus shortlist.
+- [x] Add richer weekly and monthly completion trend charts to Performance.
+- [ ] Validate the feature update and publish the project source to a private GitHub repository.
+- [ ] Save an updated checkpoint and provide the managed Android APK build handoff.
